@@ -121,6 +121,7 @@ def main(args):
                 destination_file = final_strip(destination_file, is_dir=False)
 
                 # No Consecutive underscores
+                # TODO: Move the double underscore removal to delete_nonsense()
                 single_us_file = re.sub("[_]+", "_", destination_file.stem)
                 destination_file = destination_file.with_stem(single_us_file)
                 if args.dry_run and not destination_file.exists():
