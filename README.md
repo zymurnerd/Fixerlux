@@ -2,7 +2,7 @@
 
 ## What
  
-An CL app with a ridiculous name.
+A CL app with a ridiculous name.
 
 ## Why
 
