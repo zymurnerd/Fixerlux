@@ -65,8 +65,6 @@ def main(args):
         print()
         print(root)
         _dirs_list.append(root)
-        if not args.recursive:
-            _dirs_list = [str(pathlib.Path(root, x)) for x in dirs]
         for file in tqdm(files, desc="Files", total=len(files)):
             source_file = pathlib.Path(root, file)
             destination_file = ws_to_underscore(source_file)
@@ -81,8 +79,11 @@ def main(args):
                 print(destination_file)
             elif not destination_file.exists():
                 source_file.replace(destination_file)
+            elif source_file != destination_file:
+                print(f'Could not rename due to existing file:\n{source_file}')
 
         if not args.recursive:
+            _dirs_list = [str(pathlib.Path(root, x)) for x in dirs]
             break
 
     print("\nFixing dirs...\n")
@@ -99,6 +100,8 @@ def main(args):
             print(destination)
         elif not destination.exists():
             os.rename(source, destination)
+        elif source != destination:
+            print(f'Could not rename due to existing directory:\n{source}')
 
 
 # Entrance point
