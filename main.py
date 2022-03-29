@@ -84,6 +84,7 @@ def delete_excess_periods(source, is_dir=None):
     us = re.sub('[.]{2,}', "", us)
 
     if is_dir:
+        us = re.sub('(?!^)[.](?!$)', "", us)
         _destination = _source.with_name(us)
     else:
         _destination = _source.with_stem(us)
