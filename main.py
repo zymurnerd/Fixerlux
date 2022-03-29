@@ -6,6 +6,13 @@ import re
 from tqdm import tqdm
 
 
+def make_exception(source):
+    if source.parent.name == "onlyfans" and source.parent.parent.name == "onlyfans":
+        return True
+
+    return False
+
+
 def final_strip(source, is_dir=None):
     _source = pathlib.Path(source)
     _destination = pathlib.Path(source)
@@ -137,6 +144,9 @@ def main(args):
         print("\nFixing dirs...\n")
         for dir in tqdm(_dirs_list, desc="Directories", total=len(_dirs_list)):
             source = pathlib.Path(dir)
+            if make_exception(source):
+                continue
+
             destination = ws_to_underscore(source, is_dir=True)
             destination = delete_excess_periods(destination, is_dir=True)
             destination = delete_nonsense(destination, is_dir=True)
