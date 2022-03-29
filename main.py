@@ -34,7 +34,7 @@ def delete_nonsense(source):
     _destination = pathlib.Path(source)
 
     # Strip excess periods
-    us = re.sub(r'[!@#$%*—•’\'\[\]]', "", _source.stem)
+    us = re.sub(r'[!@#$%*,—•–’\'\[\]]', "", _source.stem)
     us = re.sub(r'-_', "-", us)
     us = re.sub(r'_-', "-", us)
     us = re.sub('[-]{2,}', "-", us)
