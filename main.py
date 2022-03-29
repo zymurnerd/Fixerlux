@@ -17,11 +17,6 @@ def final_strip(source, is_dir=None):
     _source = pathlib.Path(source)
     _destination = pathlib.Path(source)
 
-    if is_dir:
-        us = _source.name
-    else:
-        us = _source.stem
-
     # Strip all dumb characters
     if is_dir:
         _destination = _source.with_name(_source.name.strip(' _-@*![]#'))
@@ -142,8 +137,8 @@ def main(args):
 
     if do_dirs:
         print("\nFixing dirs...\n")
-        for dir in tqdm(_dirs_list, desc="Directories", total=len(_dirs_list)):
-            source = pathlib.Path(dir)
+        for _dir in tqdm(_dirs_list, desc="Directories", total=len(_dirs_list)):
+            source = pathlib.Path(_dir)
             if make_exception(source):
                 continue
 
