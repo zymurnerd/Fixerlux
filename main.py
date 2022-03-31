@@ -6,6 +6,25 @@ import re
 from tqdm import tqdm
 
 
+def all_caps_to_lower(source, is_dir=None):
+    _source = pathlib.Path(source)
+    _destination = pathlib.Path(source)
+
+    # If it's ALL CAPS, make it all lower
+    if is_dir:
+        name = _source.name
+        if name == name.upper():
+            name = name.lower()
+        _destination = _source.with_name(name)
+    else:
+        stem = _source.stem
+        if stem == stem.upper():
+            stem = stem.lower()
+        _destination = _source.with_stem(stem)
+
+    return _destination
+
+
 def make_exception(source):
     if source.parent.name == "onlyfans" and source.parent.parent.name == "onlyfans":
         return True
@@ -119,6 +138,7 @@ def main(args):
                 destination_file = delete_excess_periods(destination_file, is_dir=False)
                 destination_file = delete_nonsense(destination_file, is_dir=False)
                 destination_file = final_strip(destination_file, is_dir=False)
+                destination_file = all_caps_to_lower(destination_file, is_dir=False)
 
                 # No Consecutive underscores
                 # TODO: Move the double underscore removal to delete_nonsense()
@@ -146,6 +166,7 @@ def main(args):
             destination = ws_to_underscore(source, is_dir=True)
             destination = delete_excess_periods(destination, is_dir=True)
             destination = delete_nonsense(destination, is_dir=True)
+            destination = all_caps_to_lower(destination, is_dir=True)
 
             # No Consecutive underscores
             single_us_dir = re.sub("[_]+", "_", destination.name)
