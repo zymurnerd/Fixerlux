@@ -1,9 +1,25 @@
 import argparse
 import os
 import pathlib
-import re
+import regex as re
 
 from tqdm import tqdm
+
+
+def no_fucking_emojis(source, is_dir=None):
+    _source = pathlib.Path(source)
+    _destination = pathlib.Path(source)
+
+    pattern = '\p{Extended_Pictographic}|\p{EMod}|\u200d'
+
+    if is_dir:
+        # _destination = _destination.with_name(re.sub('\p{Emoji}|\u200d|\p{EMod}|\uFE0F|\u20E3|\p{RI}', '', _source.name, re.UNICODE))
+        _destination = _destination.with_name(re.sub(pattern, '', _source.name, re.UNICODE))
+    else:
+        # _destination = _destination.with_stem(re.sub('\p{Emoji}|\u200d|\p{EMod}|\uFE0F|\u20E3|\p{RI}', '', _source.stem, re.UNICODE))
+        _destination = _destination.with_stem(re.sub(pattern, '', _source.stem, re.UNICODE))
+
+    return _destination
 
 
 def all_caps_to_lower(source, is_dir=None):
@@ -135,6 +151,7 @@ def main(args):
             for file in tqdm(files, desc="Files", total=len(files)):
                 source_file = pathlib.Path(root, file)
                 destination_file = ws_to_underscore(source_file, is_dir=False)
+                destination_file = no_fucking_emojis(destination_file, is_dir=False)
                 destination_file = delete_excess_periods(destination_file, is_dir=False)
                 destination_file = delete_nonsense(destination_file, is_dir=False)
                 destination_file = final_strip(destination_file, is_dir=False)
@@ -164,6 +181,7 @@ def main(args):
                 continue
 
             destination = ws_to_underscore(source, is_dir=True)
+            destination = no_fucking_emojis(destination, is_dir=True)
             destination = delete_excess_periods(destination, is_dir=True)
             destination = delete_nonsense(destination, is_dir=True)
             destination = all_caps_to_lower(destination, is_dir=True)
