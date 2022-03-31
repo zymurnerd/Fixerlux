@@ -159,7 +159,7 @@ def main(args):
 
                 # No Consecutive underscores
                 # TODO: Move the double underscore removal to delete_nonsense()
-                single_us_file = re.sub("[_]+", "_", destination_file.stem)
+                single_us_file = re.sub("[__️_]+", "_", destination_file.stem)
                 destination_file = destination_file.with_stem(single_us_file)
                 if args.dry_run and not destination_file.exists():
                     print(destination_file)
@@ -187,7 +187,7 @@ def main(args):
             destination = all_caps_to_lower(destination, is_dir=True)
 
             # No Consecutive underscores
-            single_us_dir = re.sub("[_]+", "_", destination.name)
+            single_us_dir = re.sub("[__️_]+", "_", destination.name)
             destination = destination.with_name(single_us_dir)
 
             if args.dry_run and not destination.exists():
