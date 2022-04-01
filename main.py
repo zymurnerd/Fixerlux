@@ -10,7 +10,7 @@ def no_fucking_emojis(source, is_dir=None):
     _source = pathlib.Path(source)
     _destination = pathlib.Path(source)
 
-    pattern = '\p{Extended_Pictographic}|\p{EMod}|\u200d'
+    pattern = '\p{Extended_Pictographic}|\p{EMod}|\u200d|\ufe0f'
 
     if is_dir:
         # _destination = _destination.with_name(re.sub('\p{Emoji}|\u200d|\p{EMod}|\uFE0F|\u20E3|\p{RI}', '', _source.name, re.UNICODE))
