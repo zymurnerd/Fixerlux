@@ -94,7 +94,7 @@ def delete_nonsense(source, is_dir=None):
         us = _source.stem
 
     # Strip excess periods
-    us = re.sub(r'[!@#$%*—•–’\'\[\]]', "", us)
+    us = re.sub(r'[!@#$%*シ—•–’\'\[\]]', "", us)
     us = re.sub(r',', "_", us)
     us = re.sub(r'-_', "-", us)
     us = re.sub(r'_-', "-", us)
