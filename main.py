@@ -204,9 +204,9 @@ def main(args):
                 single_us_file = re.sub("[__️_]+", "_", destination_file.stem)
                 destination_file = destination_file.with_stem(single_us_file)
                 if args.dry_run and not destination_file.exists():
-                    print(destination_file)
+                    print(str(source_file) + '  -->  ' + str(destination_file))
                 elif not destination_file.exists():
-                    print(destination_file)
+                    print(str(source_file) + '  -->  ' + str(destination_file))
                     source_file.replace(destination_file)
                 elif source_file != destination_file:
                     print(f'Could not rename due to existing file:\n{source_file}')
@@ -233,9 +233,9 @@ def main(args):
             destination = destination.with_name(single_us_dir)
 
             if args.dry_run and not destination.exists():
-                print(destination)
+                print(str(source) + '  -->  ' + str(destination))
             elif not destination.exists():
-                print(destination)
+                print(str(source) + '  -->  ' + str(destination))
                 os.rename(source, destination)
             elif source != destination:
                 print(f'Could not rename due to existing directory:\n{source}')
