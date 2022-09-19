@@ -44,6 +44,10 @@ def all_caps_to_lower(source, is_dir=None):
 def make_exception(source):
     if source.parent.name == "onlyfans" and source.parent.parent.name == "onlyfans":
         return True
+    if 'onlyfans/onlyfans' in str(source) :
+        temp_str = str(source).split('onlyfans/onlyfans')[-1]
+        if any([x in temp_str for x in ('Posts', 'Messages', 'Metadata', 'Profile', 'Archived', 'Stories', 'Highlights' )]):
+            return True
 
     return False
 
@@ -128,6 +132,43 @@ def delete_excess_periods(source, is_dir=None):
 
     return _destination
 
+def remove_blacklist_entries(source, is_dir=None):
+    if make_exception(source):
+        return source
+    bl = pathlib.Path(__file__).parent / '.blacklist'
+    if not bl.exists():
+        print("No file .blacklist found")
+        return source
+
+    _source = pathlib.Path(source)
+    _destination = pathlib.Path(source)
+
+    if is_dir:
+        us = _source.name
+    else:
+        us = _source.stem
+
+    with bl.open(mode='r') as f:
+        lines = f.readlines()
+
+    for line in lines:
+        line = line.strip()
+        line = line.replace('.', '\.')
+        line = line.split(" ")
+        if line[-1] == 'dte':
+            line = ' '.join(line[0:-1])
+            us = re.split(line, us, flags=re.I)[0]
+        else:
+            line = ' '.join(line)
+            us = re.sub(line, "", us, flags=re.I)
+
+    if is_dir:
+        _destination = _source.with_name(us)
+    else:
+        _destination = _source.with_stem(us)
+
+    return _destination
+
 
 def main(args):
     cwd = os.getcwd()
@@ -151,6 +192,7 @@ def main(args):
             for file in tqdm(files, desc="Files", total=len(files)):
                 source_file = pathlib.Path(root, file)
                 destination_file = ws_to_underscore(source_file, is_dir=False)
+                destination_file = remove_blacklist_entries(destination_file, is_dir=False)
                 destination_file = no_fucking_emojis(destination_file, is_dir=False)
                 destination_file = delete_excess_periods(destination_file, is_dir=False)
                 destination_file = delete_nonsense(destination_file, is_dir=False)
