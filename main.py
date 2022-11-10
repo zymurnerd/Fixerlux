@@ -98,7 +98,7 @@ def delete_nonsense(source, is_dir=None):
         us = _source.stem
 
     # Strip excess periods
-    us = re.sub(r'[!@#$%*シ—•–’\'\[\]]', "", us)
+    us = re.sub(r'[|!@#$%*シ—•–’\'\[\]]', "", us)
     us = re.sub(r',', "_", us)
     us = re.sub(r'-_', "-", us)
     us = re.sub(r'_-', "-", us)
@@ -131,6 +131,25 @@ def delete_excess_periods(source, is_dir=None):
         _destination = _source.with_stem(us)
 
     return _destination
+
+def delete_bunkr_junk(source, is_dir=None):
+    _source = pathlib.Path(source)
+    _destination = pathlib.Path(source)
+
+    if is_dir:
+        us = _source.name
+    else:
+        us = _source.stem
+
+    us = re.sub('-[A-Za-z0-9]{8}$', "", us)
+
+    if is_dir:
+        _destination = _source.with_name(us)
+    else:
+        _destination = _source.with_stem(us)
+
+    return _destination
+
 
 def remove_blacklist_entries(source, is_dir=None):
     if make_exception(source):
@@ -191,7 +210,8 @@ def main(args):
             print(root)
             for file in tqdm(files, desc="Files", total=len(files)):
                 source_file = pathlib.Path(root, file)
-                destination_file = ws_to_underscore(source_file, is_dir=False)
+                destination_file = delete_bunkr_junk(source_file, is_dir=False)
+                destination_file = ws_to_underscore(destination_file, is_dir=False)
                 destination_file = remove_blacklist_entries(destination_file, is_dir=False)
                 destination_file = no_fucking_emojis(destination_file, is_dir=False)
                 destination_file = delete_excess_periods(destination_file, is_dir=False)
