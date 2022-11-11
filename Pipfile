@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 regex = "*"
 tqdm = "*"
+zxcvbn = "*"
 
 [dev-packages]
 

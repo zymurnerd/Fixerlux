@@ -4,6 +4,7 @@ import pathlib
 import regex as re
 
 from tqdm import tqdm
+from zxcvbn import zxcvbn as z
 
 
 def no_fucking_emojis(source, is_dir=None):
@@ -141,7 +142,33 @@ def delete_bunkr_junk(source, is_dir=None):
     else:
         us = _source.stem
 
-    us = re.sub('-[A-Za-z0-9]{8}$', "", us)
+    matches = re.findall(r'-[A-Za-z0-9]{8}$', us)
+    for match in matches:
+        match = match[1:]
+        if re.search(r'([0-9]{8})', match):
+            us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+            break
+        results = z(match)
+        if len(results['sequence']) == 1 and results['sequence'][0]['pattern'] == 'bruteforce' and results['score'] > 1:
+            us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+            break
+        is_leet = False
+        is_reversed = False
+        for sequence in results['sequence']:
+            try:
+                is_leet |= sequence['l33t']
+            except KeyError:
+                pass
+
+            try:
+                is_reversed |= sequence['reversed']
+            except KeyError:
+                pass
+
+
+        if is_reversed or is_leet or results['score'] > 1:
+            us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+            break
 
     if is_dir:
         _destination = _source.with_name(us)
@@ -189,6 +216,21 @@ def remove_blacklist_entries(source, is_dir=None):
     return _destination
 
 
+def no_repeated_ext(source, is_dir=None):
+    _source = pathlib.Path(source)
+    _destination = pathlib.Path(source)
+
+    if is_dir:
+        return _destination
+
+    us = pathlib.Path(_source.stem)
+    ext = _source.suffix
+    while us.suffix.lower() == ext and ext.lower() != '':
+        us = pathlib.Path(us.stem)
+
+    return pathlib.Path(_source.parent, str(us) + ext)
+
+
 def main(args):
     cwd = os.getcwd()
     topdown = not args.recursive
@@ -206,8 +248,8 @@ def main(args):
         _dirs_list.append(root)
 
         if do_files:
-            print()
-            print(root)
+            # print()
+            # print(root)
             for file in tqdm(files, desc="Files", total=len(files)):
                 source_file = pathlib.Path(root, file)
                 destination_file = delete_bunkr_junk(source_file, is_dir=False)
@@ -216,6 +258,7 @@ def main(args):
                 destination_file = no_fucking_emojis(destination_file, is_dir=False)
                 destination_file = delete_excess_periods(destination_file, is_dir=False)
                 destination_file = delete_nonsense(destination_file, is_dir=False)
+                destination_file = no_repeated_ext(destination_file, is_dir=False)
                 destination_file = final_strip(destination_file, is_dir=False)
                 destination_file = all_caps_to_lower(destination_file, is_dir=False)
 
