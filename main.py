@@ -99,7 +99,7 @@ def delete_nonsense(source, is_dir=None):
         us = _source.stem
 
     # Strip excess periods
-    us = re.sub(r'[|!@#$%*シ—•–’\'\[\]]', "", us)
+    us = re.sub(r'[|!@#$%*シ—•–’\'\[\]П÷▒─П÷≤▐╓╙┬Б²╓О╦▐■«»≥ё╔]', "", us)
     us = re.sub(r',', "_", us)
     us = re.sub(r'-_', "-", us)
     us = re.sub(r'_-', "-", us)
@@ -133,6 +133,26 @@ def delete_excess_periods(source, is_dir=None):
 
     return _destination
 
+def delete_stupid_numbers(source, is_dir=None):
+    _source = pathlib.Path(source)
+    _destination = pathlib.Path(source)
+
+    if is_dir:
+        us = _source.name
+    else:
+        us = _source.stem
+
+    us = re.sub(r'[-_]{1}[0-9]{5,7}[-_]{1}', '_', us)
+    us = re.sub(r'[-_]{1}[0-9]{9,}[-_]{1}', '_', us)
+
+    if is_dir:
+        _destination = _source.with_name(us)
+    else:
+        _destination = _source.with_stem(us)
+
+    return _destination
+
+
 def delete_bunkr_junk(source, is_dir=None):
     _source = pathlib.Path(source)
     _destination = pathlib.Path(source)
@@ -143,15 +163,23 @@ def delete_bunkr_junk(source, is_dir=None):
         us = _source.stem
 
     matches = re.findall(r'-[A-Za-z0-9]{8}$', us)
+    matches += re.findall(r'-[A-Za-z0-9]{4}$', us)
     for match in matches:
         match = match[1:]
         if re.search(r'([0-9]{8})', match):
             us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
             break
-        results = z(match)
-        if len(results['sequence']) == 1 and results['sequence'][0]['pattern'] == 'bruteforce' and results['score'] > 1:
-            us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+        elif re.search(r'([0-9]{4})', match) and not re.search(r'20[0-2][0-9]', match):
+            us = re.sub(r'-[A-Za-z0-9]{4}$', "", us)
             break
+        results = z(match)
+        if len(results['sequence']) == 1 and results['sequence'][0]['pattern'] == 'bruteforce' and (results['score'] > 1 or re.search(r'([A-Za-z0-9]{4})', match)):
+            if re.search(r'([A-Za-z0-9]{8})', match):
+                us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+                break
+            elif re.search(r'([A-Za-z0-9]{4})', match):
+                us = re.sub(r'-[A-Za-z0-9]{4}$', "", us)
+                break
         is_leet = False
         is_reversed = False
         for sequence in results['sequence']:
@@ -167,7 +195,10 @@ def delete_bunkr_junk(source, is_dir=None):
 
 
         if is_reversed or is_leet or results['score'] > 1:
-            us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+            if re.search(r'([A-Za-z0-9]{8})', match):
+                us = re.sub(r'-[A-Za-z0-9]{8}$', "", us)
+            elif re.search(r'([A-Za-z0-9]{4})', match):
+                us = re.sub(r'-[A-Za-z0-9]{4}$', "", us)
             break
 
     if is_dir:
@@ -252,11 +283,14 @@ def main(args):
             # print(root)
             for file in tqdm(files, desc="Files", total=len(files)):
                 source_file = pathlib.Path(root, file)
+                if make_exception(source_file):
+                    continue
                 destination_file = delete_bunkr_junk(source_file, is_dir=False)
                 destination_file = ws_to_underscore(destination_file, is_dir=False)
                 destination_file = remove_blacklist_entries(destination_file, is_dir=False)
                 destination_file = no_fucking_emojis(destination_file, is_dir=False)
                 destination_file = delete_excess_periods(destination_file, is_dir=False)
+                destination_file = delete_stupid_numbers(destination_file, is_dir=False)
                 destination_file = delete_nonsense(destination_file, is_dir=False)
                 destination_file = no_repeated_ext(destination_file, is_dir=False)
                 destination_file = final_strip(destination_file, is_dir=False)
@@ -272,7 +306,17 @@ def main(args):
                     print(str(source_file) + '  -->  ' + str(destination_file))
                     source_file.replace(destination_file)
                 elif source_file != destination_file:
-                    print(f'Could not rename due to existing file:\n{source_file}')
+                    i = 0
+                    tempfile = destination_file
+                    while tempfile.exists():
+                       tempfile = destination_file.with_stem(destination_file.stem + f"-{i}")
+                       i += 1
+                    i = 0
+                    destination_file = tempfile
+                    print(str(source_file) + '  -->  ' + str(destination_file))
+                    if not args.dry_run:
+                        source_file.replace(destination_file)
+                    # print(f'Could not rename due to existing file:\n{source_file}')
 
         if not args.recursive:
             _dirs_list = [str(pathlib.Path(root, x)) for x in dirs]
@@ -289,6 +333,7 @@ def main(args):
             destination = no_fucking_emojis(destination, is_dir=True)
             destination = delete_excess_periods(destination, is_dir=True)
             destination = delete_nonsense(destination, is_dir=True)
+            destination = final_strip(destination, is_dir=True)
             destination = all_caps_to_lower(destination, is_dir=True)
 
             # No Consecutive underscores
